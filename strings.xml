@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Music Genre Identifier App</string>
+    <string name="welcome_title">Welcome To The Music Genre Identifier App</string>
+    <string name="welcome_message">We will try to guess the genre of the recording you attach</string>
+    <string name="enter_app">Are you ready? Click \"Start\" below</string>
+    <string name="button_enter">Start</string>
+    <string name="image_of_musical_notes">Image of musical notes</string>
+    <string name="instruction_title">Instructions to follow:</string>
+    <string name="Instruction_message1">1. Click the \"RECORD\" button and start recording your audio</string>
+    <string name="Instruction_message2">2. Once you\'re done, click the \"STOP\" button</string>
+    <string name="Instruction_message3">3. Click the \"GUESS\" button so we can guess what type of recording it is!</string>
+    <string name="button_record">RECORD</string>
+    <string name="button_stop">STOP</string>
+    <string name="button_guess">GUESS</string>
+    <string name="button_play">PLAY</string>
+</resources>
