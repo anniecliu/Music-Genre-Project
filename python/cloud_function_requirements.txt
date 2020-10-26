@@ -1,0 +1,8 @@
+# Function dependencies, for example:
+# package>=version
+
+
+librosa>=0.8.0,<1.0
+numpy>=1.0,<2.0
+google-api-python-client>=1.10,<2.0
+google-api-core>=1.22,<2.0
