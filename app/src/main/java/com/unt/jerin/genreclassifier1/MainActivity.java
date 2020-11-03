@@ -3,24 +3,32 @@ package com.unt.jerin.genreclassifier1;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 
-import android.os.Environment;
+import android.os.CountDownTimer;
 //import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static android.Manifest.permission.RECORD_AUDIO;
@@ -39,10 +47,9 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
 
-    Button buttonStart, buttonStop, buttonPlayLastRecordAudio,
-            buttonStopPlayingRecording ;
-    Button buttonStartWav, buttonStopWav, uploadAudioToGCP, identifyGenre;
-    TextView identifiedGenre;
+    //Button buttonStart, buttonStop, buttonPlayLastRecordAudio, buttonStopPlayingRecording ;
+    Button buttonStartWav, buttonStopWav, buttonPlayWav, buttonStopPlayWav, identifyGenre;
+    TextView identifiedGenre, secsText;
     String AudioSavePathInDevice = null;
     MediaRecorder mediaRecorder ;
     Random random ;
@@ -50,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
     public static final int RequestPermissionCode = 1;
     MediaPlayer mediaPlayer ;
     PredictionsStoreDB predictionsStoreDB;
+    CountDownTimer ct = setupTimer();
+    String fileDir;
+
+
+    TableLayout table;
+
 
     String lastRecordedFile = "";
 
@@ -61,133 +74,38 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        buttonStart = (Button) findViewById(R.id.button);
-        buttonStop = (Button) findViewById(R.id.button2);
-        buttonPlayLastRecordAudio = (Button) findViewById(R.id.button3);
-        buttonStopPlayingRecording = (Button)findViewById(R.id.button4);
-
+        fileDir = getExternalCacheDir() + File.separator + "AudioRecord";
 
         buttonStartWav = (Button) findViewById(R.id.button5);
         buttonStopWav = (Button) findViewById(R.id.button6);
-        uploadAudioToGCP = (Button) findViewById(R.id.button7);
+        //uploadAudioToGCP = (Button) findViewById(R.id.button7);
         identifyGenre = (Button) findViewById(R.id.button8);
 
+        buttonPlayWav = (Button) findViewById(R.id.button11);
+        buttonStopPlayWav = (Button) findViewById(R.id.button12);
 
-        buttonStop.setEnabled(false);
-        buttonPlayLastRecordAudio.setEnabled(false);
-        buttonStopPlayingRecording.setEnabled(false);
+        buttonStopWav.setEnabled(false);
+        buttonPlayWav.setEnabled(false);
+        buttonStopPlayWav.setEnabled(false);
         identifiedGenre = (TextView)findViewById(R.id.identifiedGenre);
+        secsText = (TextView)findViewById(R.id.secstext);
 
         // DB
         predictionsStoreDB = new PredictionsStoreDB(this);
 
+        //Table
+        table = (TableLayout) findViewById(R.id.table1);
+        populatePredictionHistoryTable();
+
         random = new Random();
 
-        buttonStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                if(checkPermission()) {
-
-                    /*AudioSavePathInDevice =Environment.getStorageDirectory().getAbsolutePath() + "/" +
-                            CreateRandomAudioFileName(5) + "AudioRecording.3gp";*/
-
-                    AudioSavePathInDevice =
-                            Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +
-                                    CreateRandomAudioFileName(5) + "AudioRecording.3gp";
-
-                    AudioSavePathInDevice = getExternalCacheDir().getAbsolutePath();
-                    AudioSavePathInDevice += "/"  + CreateRandomAudioFileName(5) + "AudioRecording.wav";
-
-                    System.out.println("AudioSavePathInDevice: "+AudioSavePathInDevice);
-
-                    MediaRecorderReady();
-
-                    try {
-                        mediaRecorder.prepare();
-                        mediaRecorder.start();
-                    } catch (IllegalStateException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-
-                    buttonStart.setEnabled(false);
-                    buttonStop.setEnabled(true);
-
-                    Toast.makeText(MainActivity.this, "Recording started",
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    requestPermission();
-                }
-
-            }
-        });
-
-        buttonStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    mediaRecorder.stop();
-                    buttonStop.setEnabled(false);
-                    buttonPlayLastRecordAudio.setEnabled(true);
-                    buttonStart.setEnabled(true);
-                    buttonStopPlayingRecording.setEnabled(false);
-
-                    Toast.makeText(MainActivity.this, "Recording Completed",
-                            Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        buttonPlayLastRecordAudio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) throws IllegalArgumentException,
-                    SecurityException, IllegalStateException {
-
-                buttonStop.setEnabled(false);
-                buttonStart.setEnabled(false);
-                buttonStopPlayingRecording.setEnabled(true);
-
-                mediaPlayer = new MediaPlayer();
-                try {
-                    mediaPlayer.setDataSource(AudioSavePathInDevice);
-                    mediaPlayer.prepare();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                mediaPlayer.start();
-                Toast.makeText(MainActivity.this, "Recording Playing",
-                        Toast.LENGTH_LONG).show();
-            }
-        });
-
-        buttonStopPlayingRecording.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                buttonStop.setEnabled(false);
-                buttonStart.setEnabled(true);
-                buttonStopPlayingRecording.setEnabled(false);
-                buttonPlayLastRecordAudio.setEnabled(true);
-
-                if(mediaPlayer != null){
-                    mediaPlayer.stop();
-                    mediaPlayer.release();
-                    MediaRecorderReady();
-                }
-            }
-        });
 
 
         /**
          * Wav recorder
          */
-        String fileDir = getExternalCacheDir() + File.separator + "AudioRecord";
+        //String fileDir = getExternalCacheDir() + File.separator + "AudioRecord";
         RecordWavFile recordWav = new RecordWavFile(fileDir);
 
         buttonStartWav.setOnClickListener(new View.OnClickListener() {
@@ -197,9 +115,12 @@ public class MainActivity extends AppCompatActivity {
                 if(checkPermission()) {
 
                     recordWav.startWavFileRecord();
+                    ct.start();
 
                     buttonStartWav.setEnabled(false);
                     buttonStopWav.setEnabled(true);
+                    buttonPlayWav.setEnabled(false);
+                    buttonStopPlayWav.setEnabled(false);
 
                     Toast.makeText(MainActivity.this, "Recording Wav started",
                             Toast.LENGTH_LONG).show();
@@ -219,10 +140,15 @@ public class MainActivity extends AppCompatActivity {
 
                     lastRecordedFile = recordWav.stopWavFileRecord();
 
+                    ct.cancel();
+                    ct.onFinish();
+                    ct = setupTimer();
+
                     buttonStopWav.setEnabled(false);
-                    uploadAudioToGCP.setEnabled(true);
+                    //uploadAudioToGCP.setEnabled(true);
                     buttonStartWav.setEnabled(true);
-                    buttonStopPlayingRecording.setEnabled(false);
+                    buttonPlayWav.setEnabled(true);
+                    buttonStopPlayWav.setEnabled(true);
 
                     Toast.makeText(MainActivity.this, "Recording Wav Completed",
                             Toast.LENGTH_LONG).show();
@@ -233,15 +159,57 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        buttonPlayWav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) throws IllegalArgumentException,
+                    SecurityException, IllegalStateException {
+                Log.d("buttonPlayWav", "Inside buttonPlayWav onClick");
+
+                buttonStopWav.setEnabled(false);
+                buttonStartWav.setEnabled(false);
+                buttonStopPlayWav.setEnabled(true);
+
+                mediaPlayer = new MediaPlayer();
+                try {
+                    Log.d("buttonPlayWav", "lastRecordedFile: "+lastRecordedFile);
+                    mediaPlayer.setDataSource(lastRecordedFile);
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                mediaPlayer.start();
+                Toast.makeText(MainActivity.this, "Recording Playing",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+
+        buttonStopPlayWav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buttonStopWav.setEnabled(false);
+                buttonStartWav.setEnabled(true);
+                buttonStopPlayWav.setEnabled(false);
+                buttonPlayWav.setEnabled(true);
+
+                if(mediaPlayer != null){
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                    //MediaRecorderReady();
+                }
+            }
+        });
+
+
         /**
          * Upload the audio file to GCP Bucket
          */
-        uploadAudioToGCP.setOnClickListener(new View.OnClickListener() {
+        /*uploadAudioToGCP.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
                     //mediaRecorder.stop();
-                    InputStream is = getResources().openRawResource(R.raw.genre_classifier_bucket_creds);
+                    InputStream is = getResources().openRawResource(R.raw.genre_classifier_bucket_creds_1);
 
 
                     // The ID of your GCP project
@@ -269,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
 
 
         /**
@@ -281,6 +249,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 try {
+
+                    uploadFileToGCPBucket(lastRecordedFile);
                     //mediaRecorder.stop();
                     Log.d("identifyGenre", "Inside identifyGenre onClick");
 
@@ -291,7 +261,11 @@ public class MainActivity extends AppCompatActivity {
 
                     identifiedGenre.setText(prediction);
 
+                    // predictionsStoreDB.deleteAllPredictionData();
+
                     predictionsStoreDB.insertPredictionData(baseFileName, prediction);
+
+                    populatePredictionHistoryTable();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -322,6 +296,191 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }*/
 
+    }
+
+
+    public void uploadFileToGCPBucket(String uploadFileName){
+        try {
+            //mediaRecorder.stop();
+            InputStream is = getResources().openRawResource(R.raw.genre_classifier_bucket_creds_1);
+
+
+            // The ID of your GCP project
+            String projectId = "genre-classifier-293000";
+
+            // The ID of your GCS bucket
+            String bucketName = "genre-classifier-audio-files-bucket";
+
+            // The path to your file to upload
+            // String filePath = "C:\\Jerin\\datasets\\genre-guesser1\\test-recorded-dataset\\classical-mozart.wav";
+            String filePath = uploadFileName;
+
+
+            // The ID of your GCS object
+            //String objectName = "testfile_"+currentTimestamp+".wav";
+            String objectName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
+            Log.d("", "projectId: "+projectId+"; bucketName: "+bucketName+"; filePath: "+filePath+"; objectName: "+objectName);
+
+            FileUploadToGCPBucket.uploadObject(projectId, bucketName, objectName, filePath, is);
+            Log.d("Uploaded File URL: ", "https://storage.googleapis.com/genre-classifier-audio-files-bucket/"+objectName);
+            Toast.makeText(MainActivity.this, "File Uploaded",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public View.OnClickListener getListenerToPlaySong(String songFileName){
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) throws IllegalArgumentException,
+                    SecurityException, IllegalStateException {
+                Log.d("buttonPlayWav", "Inside buttonPlayWav onClick");
+
+                mediaPlayer = new MediaPlayer();
+                try {
+                    Log.d("buttonPlayWav", "songFileName: "+songFileName);
+                    mediaPlayer.setDataSource(fileDir+ File.separator + songFileName);
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                mediaPlayer.start();
+                Toast.makeText(MainActivity.this, "Recording Playing",
+                        Toast.LENGTH_LONG).show();
+            }
+        };
+
+        return onClickListener;
+    }
+
+
+    public List<Prediction> retrievePredictionDataFromDb(){
+
+        Cursor dataCursor = predictionsStoreDB.getData();
+        Log.d("retrieve", "dataCursor.getCount: "+dataCursor.getCount());
+
+        List<Prediction> predictionList = new ArrayList<>();
+
+        if (dataCursor != null) {
+            // move cursor to first row
+            if (dataCursor.moveToFirst()) {
+                do {
+                    // Get version from Cursor
+                    String filename = dataCursor.getString(dataCursor.getColumnIndex("filename"));
+                    String prediction = dataCursor.getString(dataCursor.getColumnIndex("prediction"));
+
+                    Prediction prediction1 = new Prediction(filename, prediction);
+                    predictionList.add(prediction1);
+                } while (dataCursor.moveToNext());
+            }
+        }
+
+        return predictionList;
+    }
+
+
+    public void populatePredictionHistoryTable(){
+
+        List<Prediction> predictions = retrievePredictionDataFromDb();
+
+        //table.removeAllViews();
+
+        //table.get
+
+        int count = table.getChildCount();
+        for (int i = 1; i < count; i++) {
+            View child = table.getChildAt(i);
+            if (child instanceof TableRow) ((ViewGroup) child).removeAllViews();
+        }
+
+
+        for (int i = 1; i <=predictions.size(); i++) {
+
+            Prediction prediction = predictions.get(i-1);
+
+            TextView tv1 = new TextView(this);
+            TextView tv2 = new TextView(this);
+            TextView tv3 = new TextView(this);
+
+            ImageButton playButton = new ImageButton(this);
+            playButton.setImageResource(R.drawable.baseline_play_circle_outline_black_18dp);
+            playButton.setBackground(null);
+            playButton.setOnClickListener(getListenerToPlaySong(prediction.getFilename()));
+
+
+            TableRow row= new TableRow(this);
+            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT);
+
+            row.setLayoutParams(lp);
+            /*checkBox = new CheckBox(this);
+            tv = new TextView(this);
+            addBtn = new ImageButton(this);
+            addBtn.setImageResource(R.drawable.add);
+            minusBtn = new ImageButton(this);
+            minusBtn.setImageResource(R.drawable.minus);
+
+            qty = new TextView(this);
+            checkBox.setText("hello");
+            qty.setText("10");
+            row.addView(checkBox);
+            row.addView(minusBtn);
+            row.addView(qty);*/
+            //row.addView(addBtn);
+
+            //tv1.setTextAlignment(T);
+
+            //tv1.setGravity(Gravity.CENTER_VERTICAL);
+            tv2.setGravity(Gravity.CENTER_VERTICAL);
+            tv3.setGravity(Gravity.CENTER_VERTICAL);
+
+            tv1.setWidth(150);
+            tv2.setWidth(200);
+            tv3.setWidth(100);
+
+            tv1.setMinWidth(150);
+            tv2.setMinWidth(200);
+            tv3.setMinWidth(100);
+
+            //tv1.setText(""+i);
+            tv2.setText(prediction.getFilename());
+            tv3.setText(prediction.getPredictedGenre());
+
+            row.setGravity(Gravity.CENTER_VERTICAL);
+
+            row.addView(playButton,0);
+            row.addView(tv2,1);
+            row.addView(tv3,2);
+
+
+            table.addView(row,i);
+        }
+    }
+
+    public CountDownTimer setupTimer(){
+        CountDownTimer ct = new CountDownTimer(30000, 1000) {
+            int time=30;
+
+            public void onTick(long millisUntilFinished) {
+                secsText.setText("0:"+checkDigit(time));
+                time--;
+            }
+
+            public void onFinish() {
+                secsText.setText("0:00");
+            }
+
+        };
+
+        return ct;
+
+    }
+
+    public String checkDigit(int number) {
+        return number <= 9 ? "0" + number : String.valueOf(number);
     }
 
     public void MediaRecorderReady(){

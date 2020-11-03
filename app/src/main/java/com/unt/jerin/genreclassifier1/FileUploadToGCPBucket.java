@@ -24,6 +24,8 @@ public class FileUploadToGCPBucket {
 
 
 
+
+
 	public static void uploadObject(String projectId, String bucketName, String objectName, String filePath, InputStream bucketCredsInputStream)
 			throws IOException {
 		// The ID of your GCP project

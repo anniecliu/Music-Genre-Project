@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class RecordWavFile {
     private static final int samplingRates[] = {16000, 11025, 11000, 8000, 6000};
@@ -68,9 +70,10 @@ public class RecordWavFile {
             File waveFile = getFile("wav");
             Log.d("RecordWavFile", "waveFile: "+waveFile);
             convertRawToWavFormat(mRecording, waveFile);
-            Log.e("path_audioFilePath",audioFilePath);
+            Log.d("path_audioFilePath",audioFilePath);
             return waveFile.getAbsolutePath();
         } catch (Exception e) {
+            e.printStackTrace();
             Log.e("Error saving file : ", e.getMessage());
         }
         return  null;
@@ -188,10 +191,22 @@ public class RecordWavFile {
 
     /* Get file name */
     private File getFile(final String suffix) {
-        Time time = new Time();
-        time.setToNow();
-        audioFilePath = time.format("%Y%-%d%H%M%S");
-        return new File(recordFileDirectory, time.format("%Y-%m-%d%-H%M%S") + "." + suffix);
+
+        //Date date = new Date();
+        //DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+        //Date d = new Date();
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss") ;
+
+        CharSequence dateStr = android.text.format.DateFormat.format("yyyy-MM-dd_hhmmss", new Date());
+
+        //Time time = new Time();
+        //time.setToNow();
+        //audioFilePath = time.format("%Y%m%d%H%M%S");
+        //return new File(recordFileDirectory, time.format("%Y-%mm-%dd-%HH%MM%SS") + "." + suffix);
+        //audioFilePath
+
+        audioFilePath = dateStr.toString();
+        return new File(recordFileDirectory, dateStr + "." + suffix);
     }
 
     private void writeInt(final DataOutputStream output, final int value) throws IOException {

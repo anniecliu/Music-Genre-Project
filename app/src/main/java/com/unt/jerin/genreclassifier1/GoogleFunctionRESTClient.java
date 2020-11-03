@@ -14,7 +14,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class GoogleFunctionRESTClient {
 	
-	public static final String GCP_FUNCTION_URL = "https://us-central1-genre-classifier-293000.cloudfunctions.net/process-wav-file-and-predict?wav_audio_file_name=";
+	// public static final String GCP_FUNCTION_URL = "https://us-central1-genre-classifier-293000.cloudfunctions.net/process-wav-file-and-predict?wav_audio_file_name=";
+	public static final String GCP_FUNCTION_URL = "https://us-central1-genre-classifier-293000.cloudfunctions.net/process-wav-file-and-predict-5s?wav_audio_file_name=";
 
 	
 	public String getPredictionFromCloudFunction(String audioFileName) {

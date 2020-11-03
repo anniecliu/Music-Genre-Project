@@ -8,15 +8,15 @@ android:paddingLeft="5dp"
 android:paddingRight="5dp"
 android:paddingTop="5dp">
 
-<ImageView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:id="@+id/imageView"
-    android:layout_alignParentTop="true"
-    android:layout_centerHorizontal="true"
-    android:src="@drawable/ic_launcher_background"/>
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="133dp"
+        android:layout_height="112dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/music_genre_logo_1" />
 
-<Button
+<!--<Button
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Record"
@@ -53,19 +53,32 @@ android:paddingTop="5dp">
     android:layout_below="@+id/button2"
     android:layout_centerHorizontal="true"
     android:layout_marginTop="10dp"
-    />
+    />-->
 
 
     <!--New WAV File Details-->
+
+    <TextView
+        android:text="0:30"
+        android:layout_width="90dip"
+        android:layout_height="wrap_content"
+        android:padding="3dip"
+        android:id="@+id/secstext"
+        android:layout_below="@+id/imageView"
+        android:layout_centerHorizontal="true"
+        android:textSize="40dp"
+        android:textColor="@color/black"
+        android:layout_column="0" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Record"
         android:id="@+id/button5"
-        android:layout_below="@+id/button4"
+        android:layout_below="@+id/secstext"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="37dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginTop="10dp"
         />
 
     <Button
@@ -74,10 +87,10 @@ android:paddingTop="5dp">
         android:text="STOP"
         android:id="@+id/button6"
         android:layout_alignTop="@+id/button5"
-        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="250dp"
         />
 
-    <Button
+<!--    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Upload"
@@ -85,36 +98,112 @@ android:paddingTop="5dp">
         android:layout_alignTop="@+id/button6"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        />-->
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play"
+        android:id="@+id/button11"
+        android:layout_below="@+id/button5"
+        android:layout_marginLeft="70dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="20dp"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pause"
+        android:id="@+id/button12"
+        android:layout_below="@+id/button5"
+        android:layout_marginLeft="250dp"
+        android:layout_marginTop="20dp"
         />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Identify Genre"
         android:id="@+id/button8"
-        android:layout_below="@+id/button7"
+        android:layout_below="@+id/button12"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         />
 
 
 
-    <TextView
+    <!--<TextView
         android:id="@+id/label1"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_below="@+id/button8"
         android:layout_alignParentLeft="true"
         android:layout_marginTop="37dp"
-        android:text="Genre: " />
+        android:text="Genre: " />-->
 
 
     <TextView
         android:id="@+id/identifiedGenre"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_alignTop="@+id/label1"
+        android:layout_below="@+id/button8"
         android:layout_centerHorizontal="true"
+        android:textSize="40dp"
+        android:textColor="@color/black"
+        android:layout_marginTop="10dp"
         android:text="" />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="none"
+        android:layout_below="@+id/identifiedGenre"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1">
+        <TableLayout
+            android:id="@+id/table1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_below="@+id/label1"
+            android:background="#FFF"
+            android:orientation="vertical"
+            android:stretchColumns="1"
+            >
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="Play"
+                    android:layout_width="90dip"
+                    android:layout_height="wrap_content"
+                    android:padding="3dip"
+                    android:layout_column="0"
+                    android:textSize="20dp"
+                    android:gravity="center_horizontal"
+                    android:textStyle="bold"
+                    />
+                <TextView
+                    android:text="Recording Name"
+                    android:layout_width="200dip"
+                    android:layout_height="wrap_content"
+                    android:padding="3dip"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    android:layout_column="1" />
+                <TextView
+                    android:text="Genre"
+                    android:layout_width="80dip"
+                    android:layout_height="wrap_content"
+                    android:padding="3dip"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    android:layout_column="2" />
+            </TableRow>
+        </TableLayout>
+    </ScrollView>
+
 
 
 </RelativeLayout>

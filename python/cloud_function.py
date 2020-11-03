@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import urllib.request
+import statistics
 
 
 import googleapiclient.discovery
@@ -44,30 +45,50 @@ def process_WAV_file( wav_file_path ):
     SAMPLES_PER_TRACK = SAMPLE_RATE * TRACK_DURATION
     NUM_SEGMENTS = 6
 
+    n_mfcc=13
+    n_fft=2048
+    hop_length=512
+
     signal, sample_rate = librosa.load(wav_file_path, sr=SAMPLE_RATE, duration=30)
 
-    samples_per_segment = int(SAMPLES_PER_TRACK / 6)
-    num_mfcc_vectors_per_segment = math.ceil(samples_per_segment / 512)
+    num_samples_per_segment = int(SAMPLES_PER_TRACK / 6)
+    num_mfcc_vectors_per_segment = math.ceil(num_samples_per_segment / hop_length)
 
-    mfcc = librosa.feature.mfcc(signal, sample_rate, n_mfcc=13, n_fft=2048, hop_length=512)
-    mfcc = mfcc.T
+    # Creates list of mfccs from a single wav file
+    list_of_mfccs = []
 
-    data = np.array(mfcc)
+    for segment in range(6):
+        for s in range(6):
+            start_sample = num_samples_per_segment * s # s=0 -> 0 seconds
+            finish_sample = start_sample + num_samples_per_segment # s=0 -> num_samples_per_segment
 
-    return data[ ..., np.newaxis ]
+            mfcc = librosa.feature.mfcc(signal[start_sample:finish_sample],
+                                        sr=sample_rate,
+                                        n_fft=n_fft,
+                                        n_mfcc=n_mfcc,
+                                        hop_length=hop_length)                    
+
+        mfcc = mfcc.T
+        data = np.array(mfcc)
+        list_of_mfccs.append(data[ ..., np.newaxis])
+    return list_of_mfccs
+    # return data[ ..., np.newaxis]
+
+
 
 def download_file( track_url ):
-  print('inside download_file', track_url)
-  file_path = r'/tmp/' + track_url.split('/')[-1]
-  print('file_path', file_path)
-  urllib.request.urlretrieve( track_url, file_path )
-  return file_path 
+    print('inside download_file', track_url)
+    file_path = r'/tmp/' + track_url.split('/')[-1]
+    print('file_path', file_path)
+    urllib.request.urlretrieve( track_url, file_path )
+    return file_path 
 
 def predict_genre(request):
     print('inside predict_genre')
     print('request', request)
     
-    z = ['hiphop', 'reggae', 'metal', 'jazz', 'disco', 'pop', 'classical', 'country', 'blues', 'rock']
+    # z = ['hiphop', 'reggae', 'metal', 'jazz', 'disco', 'pop', 'classical', 'country', 'blues', 'rock']
+    z = ['jazz', 'reggae', 'pop', 'country', 'rock', 'disco', 'metal', 'hiphop', 'classical', 'blues']
     
     request_json = request.get_json(silent=True)
     request_args = request.args
@@ -91,30 +112,43 @@ def predict_genre(request):
     else:
         test_url = 'https://storage.googleapis.com/genre-classifier-audio-files-bucket/sweet-child-o-mine.wav'
         print('else test_url', test_url)
-    
-    
+
     test_file_path = download_file(test_url)
 
-    feature = process_WAV_file( test_file_path )
-    print( feature.shape )
-    # print( feature )
-
-
-    # project = 'genre-classifier-293000'
-    # model = 'genre_classifier_model'
-    # version = 'genre_classifier_model_version'
-	
+    features = process_WAV_file( test_file_path )
     project = 'genre-classifier-293000'
-    model = 'genre_classifier_model_1'
-    version = 'genre_classifier_model_version_1'	
+    model = 'genre_classifier_model_5s'
+    version = 'genre_classifier_model_5s_version_1'
 
-    prediction = predict_json2(project, 'us-central1', model, np.array([feature]).tolist(), version)
+    # prediction = predict_json2(project, 'us-central1', model, np.array([features]).tolist(), version)
 
-    print('prediction1', prediction)
 
-    argmaxval=np.argmax(prediction, axis=1)
-    print('argmaxval', argmaxval)
+    # features = process_WAV_file( test2)
 
-    print('predicted genre: ', z[argmaxval[0]])
+    # Creating list of mfcc features
+    list_of_predicted = []
 
-    return z[argmaxval[0]]
+    for mfcc in range(len(features)):
+        print('for mfcc', mfcc)
+        print('for features[mfcc]', features[mfcc])
+        # pred, pred_in = predict(model, features[mfcc])
+        prediction = predict_json2(project, 'us-central1', model, np.array([features[mfcc]]).tolist(), version)
+        
+        argmaxval=np.argmax(prediction, axis=1)
+        print('argmaxval', argmaxval)
+        print('predicted genre: ', mfcc, z[argmaxval[0]])
+        # list_of_predicted.append(prediction.tolist())
+        list_of_predicted.append([argmaxval[0]])
+
+    # Converting to int to get Mode
+    list_of_predicted = [int(str(x).strip('[]')) for x in list_of_predicted]
+    mode = statistics.mode(list_of_predicted)
+
+    print('list_of_predicted', list_of_predicted)
+    print('mode', mode)
+
+    # Predicted Classification
+    print('z[mode]', z[mode])
+
+    return z[mode]
+

@@ -2,6 +2,9 @@
 A collaboration with Jerin Joseph, Daniel Mata, Madeline Ben, and Annie Liu at the University of North Texas
 Last updated 2020-Oct-26
 
+# App Screenshot
+![App Screenshot](/app-screenshot/app-screenshot-1.png?raw=true "App Screenshot")
+
 # Abstract
 With an increase in the quantity of music via platforms like Spotify, Apple Music, and Pandora, grouping together different types of music in order to better handle data is a task that has become increasingly daunting. Whether it’s database management, searching for a song, or even just storing a song, being able to classify music into different genres can help ease the process of working with such large amounts of data. This inspired us to create a better user experience for both clientele and developers.
 Fortunately, we have material from a previous group project to build off of. We intend to use it as both a resource and to further extend what has been accomplished. One of the key features we would like to implement is the ability for a user to record a song through their phone, which can then be classified based on their genre. 

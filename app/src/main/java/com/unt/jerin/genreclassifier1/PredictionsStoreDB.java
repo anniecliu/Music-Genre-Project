@@ -83,10 +83,29 @@ public class PredictionsStoreDB extends SQLiteOpenHelper {
     }
 
 
-    public Cursor getData() {
+    public Boolean deleteAllPredictionData() {
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.rawQuery("select * from PREDICTIONS ", null);
+
+        if (cursor.getCount() > 0) {
+            long result = db.delete("PREDICTIONS", null, null);
+
+            if (result == -1) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    public Cursor getData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("select * from PREDICTIONS order by filename desc ", null);
         return cursor;
     }
 
